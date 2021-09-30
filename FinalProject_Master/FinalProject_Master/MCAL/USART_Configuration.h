@@ -1,0 +1,52 @@
+/*
+ * USART_Configuration.h
+ *
+ * Created: 03/09/2021 21:23:45
+ *  Author: user
+ */ 
+
+
+#ifndef USART_CONFIGURATION_H_
+#define USART_CONFIGURATION_H_
+
+#include "USART_Address.h"
+
+#define USART_INT_OFF			0
+#define USART_INT_ON			1
+
+#define USART_INT_RX			0
+#define USART_INT_TX			1
+#define USART_INT_UDR_EMPTY		2
+#define USART_INT_USE_ALL		3
+
+#define USART_RECIEVER			0
+#define USART_TRANSMITTER		1
+#define USART_TRANSCIEVER		2
+
+#define USART_DATA_FIVE			0
+#define USART_DATA_SIX			1
+#define USART_DATA_SEVEN		2
+#define USART_DATA_EIGHT		3
+#define USART_DATA_NINE			4
+
+#define USART_PARITY_OFF		0
+#define USART_PARITY_EVEN		1
+#define USART_PARITY_ODD		2
+
+#define USART_ONE_STOPBIT		0
+#define USART_TWO_STOPBIT		1
+
+#define USART_SYNC				0
+#define USART_ASYNC				1
+
+#define USART_INT_EN			USART_INT_OFF
+#define USART_INT_TYPE			USART_INT_USE_ALL
+#define USART_COMMUNICATION		USART_TRANSCIEVER
+#define USART_DATA_SIZE			USART_DATA_EIGHT
+#define USART_MODE_SLCT			USART_ASYNC
+#define USART_PARITY_MODE		USART_PARITY_OFF
+#define USART_STOPBIT_SLCT		USART_ONE_STOPBIT
+
+#define BAUD_RATE				9600UL
+#define UBRR_CALC(BD)	((F_CPU/16*BD)-1)
+#endif /* USART_CONFIGURATION_H_ */
