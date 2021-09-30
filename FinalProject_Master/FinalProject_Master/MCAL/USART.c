@@ -1,0 +1,170 @@
+/*
+ * USART.c
+ *
+ * Created: 03/09/2021 21:24:31
+ *  Author: user
+ */ 
+
+#include "USART.h"
+
+void USART_Init(void)
+{
+	uint16_t UBRR_Val = 0;
+	//Interrupt Enable Or Disable
+	#if USART_INT_EN == USART_INT_OFF
+	
+		CLR_BIT(UCSRB, RXCIE);CLR_BIT(UCSRB, TXCIE);CLR_BIT(UCSRB, UDRIE);
+	
+	#elif USART_INT_EN == USART_INT_ON
+	
+		SET_BIT(SREG, 7);	//Global Interrupt ON
+		
+		//Check where interrupt signal is coming from
+		#if USART_INT_TYPE == USART_INT_UDR_EMPTY	
+
+			CLR_BIT(UCSRB,RXCIE);CLR_BIT(UCSRB,TXCIE);SET_BIT(UCSRB, UDRIE);
+			
+		#elif USART_INT_TYPE == USART_INT_RX
+		
+			SET_BIT(UCSRB,RXCIE);CLR_BIT(UCSRB,TXCIE);CLR_BIT(UCSRB, UDRIE);
+		
+		#elif USART_INT_TYPE == USART_INT_TX
+		
+			CLR_BIT(UCSRB,RXCIE);SET_BIT(UCSRB,TXCIE);CLR_BIT(UCSRB, UDRIE);
+		
+		#elif USART_INT_TYPE == USART_INT_USE_ALL
+		
+			SET_BIT(UCSRB,RXCIE);SET_BIT(UCSRB,TXCIE);SET_BIT(UCSRB, UDRIE);
+		
+		#endif
+	
+	#else 
+	
+	#warning "Wrong selection for USART Interrupt!"
+	
+	#endif
+	
+	//Communication Mode
+	#if USART_COMMUNICATION == USART_RECIEVER
+	
+		SET_BIT(UCSRB, RXEN);CLR_BIT(UCSRB, TXEN);
+	
+	#elif USART_COMMUNICATION == USART_TRANSMITTER
+	
+		CLR_BIT(UCSRB, RXEN);SET_BIT(UCSRB, TXEN);
+	
+	#elif USART_COMMUNICATION == USART_TRANSCIEVER
+	
+		SET_BIT(UCSRB, RXEN);SET_BIT(UCSRB, TXEN);
+	
+	#else
+	
+	#warning "Choose correct communication mode!" 
+	
+	#endif
+	
+	//Data Size Select
+	#if USART_DATA_SIZE == USART_DATA_FIVE
+	
+		SET_BIT(UCSRC, URSEL);
+		CLR_BIT(UCSRB, UCSZ2);CLR_BIT(UCSRC, UCSZ1);CLR_BIT(UCSRC, UCSZ0);
+	
+	#elif USART_DATA_SIZE == USART_DATA_SIX
+	
+		SET_BIT(UCSRC, URSEL);
+		CLR_BIT(UCSRB, UCSZ2);CLR_BIT(UCSRC, UCSZ1);SET_BIT(UCSRC, UCSZ0);
+	
+	#elif USART_DATA_SIZE == USART_DATA_SEVEN
+		
+		SET_BIT(UCSRC, URSEL);
+		CLR_BIT(UCSRB, UCSZ2);SET_BIT(UCSRC, UCSZ1);CLR_BIT(UCSRC, UCSZ0);
+	
+	#elif USART_DATA_SIZE == USART_DATA_EIGHT
+	
+		SET_BIT(UCSRC, URSEL);
+		CLR_BIT(UCSRB, UCSZ2);SET_BIT(UCSRC, UCSZ1);SET_BIT(UCSRC, UCSZ0);
+	
+	#elif USART_DATA_SIZE == USART_DATA_NINE
+
+		SET_BIT(UCSRC, URSEL);
+		SET_BIT(UCSRB, UCSZ2);SET_BIT(UCSRC, UCSZ1);SET_BIT(UCSRC, UCSZ0);
+	
+	#else
+		
+	#warning "Wrong data size selection!"
+
+	#endif
+	
+	//USART Mode Select
+	#if USART_MODE_SLCT == USART_ASYNC
+	
+		SET_BIT(UCSRC, URSEL);
+		CLR_BIT(UCSRC, UMSEL);
+		
+	#elif USART_MODE_SLCT == USART_SYNC
+	
+		SET_BIT(UCSRC, URSEL);
+		SET_BIT(UCSRC, UMSEL);
+	
+	#else
+	
+	#warning "Wrong mode selection for USART!"
+	
+	#endif
+	
+	//Parity mode select
+	#if USART_PARITY_MODE == USART_PARITY_OFF
+	
+		SET_BIT(UCSRC, URSEL);
+		CLR_BIT(UCSRC, UPM1);CLR_BIT(UCSRC, UPM0);
+	
+	#elif USART_PARITY_MODE == USART_PARITY_EVEN
+	
+		SET_BIT(UCSRC, URSEL);
+		SET_BIT(UCSRC, UPM1);CLR_BIT(UCSRC, UPM0);
+	
+	#elif USART_PARITY_MODE == USART_PARITY_ODD
+
+		SET_BIT(UCSRC, URSEL);
+		SET_BIT(UCSRC, UPM1);SET_BIT(UCSRC, UPM0);
+
+	#else 
+	
+	#warning "Wrong parity mode selection!"
+	
+	#endif
+	
+	//Stop bit select
+	#if USART_STOPBIT_SLCT == USART_ONE_STOPBIT
+	
+		SET_BIT(UCSRC, URSEL);
+		CLR_BIT(UCSRC, USBS);
+
+	#elif USART_STOPBIT_SLCT == USART_TWO_STOPBIT
+
+		SET_BIT(UCSRC, URSEL);
+		SET_BIT(UCSRC, USBS);
+	
+	#else 
+	
+	#warning "Wrong stop bit selection!"
+
+	#endif
+	
+	UBRR_Val = (((F_CPU) / (16 * BAUD_RATE)) - 1);//11110101 00111001
+	UBRRL = UBRR_Val;     //00000000 00111001
+	UBRRH = (UBRR_Val >> 8);//00000000 11110101
+	
+	CLR_BIT(DDRD, 0); SET_BIT(DDRD, 1);
+
+}
+void USART_Transmit(uint8_t Data)
+{
+	UDR = Data;
+	while (GET_BIT(UCSRA, TXC) != 1);
+}
+void USART_Receive(uint8_t* Data)
+{
+	while (GET_BIT(UCSRA, RXC) != 1);
+	*Data = UDR;
+}
